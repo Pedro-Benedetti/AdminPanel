@@ -7,21 +7,21 @@
     --text-primary: #ffffff;
     --text-secondary: #646465;
     --bg-very-dark: #0e0e0f;
-    --gradient-main: linear-gradient(180deg, #161617 0%, #1f1f1f 100%);
-    
+    --gradient-main: linear-gradient(180deg, #161617 0%, #1f1f1f 100%)
+
     /* Cores para status */
     --color-profit: #22c55e;
     --color-loss: #ef4444;
     --color-pending: #f59e0b;
     --color-completed: #3b82f6;
-    --color-analysis: #6b7280;
-    
+    --color-analysis: #6b7280
+
     /* Bordas e sombras */
     --border-color: #2a2a2b;
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-    
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5)
+
     /* Transições */
     --transition-fast: 0.15s ease-in-out;
     --transition-normal: 0.3s ease-in-out;
