@@ -8,4 +8,4 @@ const ClienteSchema = new mongoose.Schema({
   status: { type: String, enum: ['concluido', 'pendente', 'em analise'], required: true }
 });
 
-module.exports = mongoose.model('Cliente', ClienteSchema);
+module.exports = mongoose.model('Cliente', ClienteSchema, 'clientes');
