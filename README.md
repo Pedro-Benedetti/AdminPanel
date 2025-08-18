@@ -6,4 +6,4 @@
 
 15/08 - Criei o esboço do backend e ajustei umas partes no front.
 
-16/08 - Escolhi qual banco de dados vou usar, nesse projeto vou usar MongoDB, nunca usei antes e quero testar ele e aprender. Fiz umas rotas de testes para ver a conexão com o back estava certa e deu tudo OK. Fiz um .env e coloquei dentro do gitignore pra não correr nenhum risco, dentro do .env coloquei meu usuário e senha do mongodb.
+16/08 - Escolhi qual banco de dados vou usar, nesse projeto vou usar MongoDB, nunca usei antes e quero testar ele e aprender. Fiz umas rotas de testes para ver se a conexão com o back estava certa e deu tudo 'OK'. Fiz um .env e coloquei dentro do gitignore para não correr risco algum, dentro do .env coloquei meu usuário e senha do mongodb.
