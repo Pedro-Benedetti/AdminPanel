@@ -1,208 +1,137 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Elementos do DOM
-    const menuToggle = document.getElementById('menuToggle');
-    const closeSidebar = document.getElementById('closeSidebar');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    const navItems = document.querySelectorAll('.nav-item');
+document.addEventListener('DOMContentLoaded', function () {
+    const transactionsTable = document.getElementById('transactionsTable');
+    const lucroTotalEl = document.getElementById('lucroTotal');
+    const prejuizoTotalEl = document.getElementById('prejuizoTotal');
+    const saldoLiquidoEl = document.getElementById('saldoLiquido');
 
-    // Controle do menu lateral mobile
-    function openSidebar() {
-        sidebar.classList.add('active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
+    // ===== Buscar dados do backend =====
+    async function loadData() {
+        try {
+            const res = await fetch('/api/clientes');
+            const data = await res.json();
 
-    function closeSidebarMenu() {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    // Event listeners para o menu
-    if (menuToggle) {
-        menuToggle.addEventListener('click', openSidebar);
-    }
-
-    if (closeSidebar) {
-        closeSidebar.addEventListener('click', closeSidebarMenu);
-    }
-
-    if (overlay) {
-        overlay.addEventListener('click', closeSidebarMenu);
-    }
-
-    // Navegação do menu lateral
-    navItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove classe active de todos os itens
-            navItems.forEach(nav => nav.classList.remove('active'));
-            
-            // Adiciona classe active ao item clicado
-            this.classList.add('active');
-            
-            // Fecha o menu em mobile
-            if (window.innerWidth <= 768) {
-                closeSidebarMenu();
+            if (!Array.isArray(data)) {
+                console.error("Erro: API não retornou array:", data);
+                return;
             }
-            
-            // TODO: Aqui será implementada a lógica de navegação entre seções
-            console.log('Navegando para:', this.querySelector('span:last-child').textContent);
-        });
-    });
 
-    // Controle de responsividade
-    function handleResize() {
-        if (window.innerWidth > 768) {
-            closeSidebarMenu();
-            sidebar.classList.remove('active');
+            updateTable(data);
+            updateStats(data);
+            renderChart(data);
+
+        } catch (err) {
+            console.error("Erro ao carregar dados:", err);
+            transactionsTable.innerHTML = `<tr><td colspan="5">Erro ao carregar dados</td></tr>`;
         }
     }
 
-    window.addEventListener('resize', handleResize);
-
-    // Escape key para fechar menu
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeSidebarMenu();
+    // ===== Atualizar tabela =====
+    function updateTable(data) {
+        if (data.length === 0) {
+            transactionsTable.innerHTML = `<tr><td colspan="5">Nenhuma transação encontrada</td></tr>`;
+            return;
         }
-    });
 
-    /* ========================================
-       PLACEHOLDER PARA FUTURAS INTEGRAÇÕES
-       ======================================== */
+        transactionsTable.innerHTML = data.map(item => `
+            <tr>
+                <td class="client-name">${item.nome}</td>
+                <td><span class="badge ${item.tipo === "lucro" ? "profit-badge" : "loss-badge"}">${item.tipo}</span></td>
+                <td class="amount ${item.tipo === "lucro" ? "profit" : "loss"}">${formatCurrency(item.valor)}</td>
+                <td class="date">${formatDate(item.data)}</td>
+                <td><span class="badge ${statusBadge(item.status)}">${item.status}</span></td>
+            </tr>
+        `).join("");
+    }
 
-    // TODO: Integração com biblioteca de gráficos (Chart.js, D3.js, etc.)
-    function initializeCharts() {
-        // Esta função será implementada para inicializar gráficos dinâmicos
-        console.log('Charts placeholder - ready for integration');
-        
-        // Exemplo de estrutura para futura integração:
-        /*
-        const chartContainer = document.querySelector('.chart-placeholder');
-        if (chartContainer) {
-            // Inicializar gráfico aqui
-            // new Chart(chartContainer, chartConfig);
+    // ===== Atualizar estatísticas =====
+    function updateStats(data) {
+        const lucro = data.filter(i => i.tipo === "lucro").reduce((acc, i) => acc + i.valor, 0);
+        const prejuizo = data.filter(i => i.tipo === "prejuizo").reduce((acc, i) => acc + i.valor, 0);
+        const saldo = lucro - prejuizo;
+
+        lucroTotalEl.textContent = formatCurrency(lucro);
+        prejuizoTotalEl.textContent = formatCurrency(prejuizo);
+        saldoLiquidoEl.textContent = formatCurrency(saldo);
+    }
+
+    // ===== Renderizar gráfico =====
+    function renderChart(data) {
+        const clientes = data.map(i => i.nome);
+        const lucros = data.map(i => i.tipo === "lucro" ? i.valor : 0);
+        const prejuizos = data.map(i => i.tipo === "prejuizo" ? i.valor : 0);
+
+        // opções do gráfico
+        const chartOptions = {
+        chart: {
+        type: 'bar',
+        height: 350,
+        toolbar: { show: true }
+         },
+        plotOptions: {
+        bar: {
+        borderRadius: 8,
+        horizontal: false,
+        columnWidth: '55%',
+           },
+         },
+        dataLabels: {
+        enabled: true,
+        style: {
+        colors: ['#fff']
+           }
+         },
+        xaxis: {
+        categories: [], // vai ser preenchido dinamicamente
+        labels: {
+        style: {
+        fontSize: '14px',
+        fontWeight: 600
+     }
+           }
+         },
+        yaxis: {
+        labels: {
+        style: {
+        fontSize: '14px'
+              }
+           }
+         },
+        colors: ['#00E396', '#FF4560'],
+        legend: {
+        position: 'top'
+         },
+        tooltip: {
+        theme: 'dark'
+         }
+     };
+
+    // cria o gráfico
+    const chart = new ApexCharts(document.querySelector("#chart"), chartOptions);
+    chart.render();
+
+    }
+
+    // ===== Helpers =====
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(value);
+    }
+
+    function formatDate(date) {
+        return new Intl.DateTimeFormat('pt-BR').format(new Date(date));
+    }
+
+    function statusBadge(status) {
+        switch (status) {
+            case "concluido": return "completed-badge";
+            case "pendente": return "pending-badge";
+            case "em análise": return "analysis-badge";
+            default: return "";
         }
-        */
     }
 
-    // TODO: Integração com dados dinâmicos da tabela
-    function initializeDataTable() {
-        // Esta função será implementada para carregar dados dinâmicos
-        console.log('Data table placeholder - ready for integration');
-        
-        // Exemplo de estrutura para futura integração:
-        /*
-        fetch('/api/financial-data')
-            .then(response => response.json())
-            .then(data => {
-                updateTable(data);
-            });
-        */
-    }
-
-    // TODO: Sistema de busca
-    function initializeSearch() {
-        const searchInput = document.querySelector('.search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                const searchTerm = e.target.value.toLowerCase();
-                console.log('Searching for:', searchTerm);
-                
-                // TODO: Implementar lógica de busca
-                // filterTableData(searchTerm);
-            });
-        }
-    }
-
-    // TODO: Filtros dinâmicos
-    function initializeFilters() {
-        // Esta função será implementada para filtros por tipo, data, etc.
-        console.log('Filters placeholder - ready for integration');
-    }
-
-    // TODO: Exportação de dados
-    function initializeExport() {
-        // Esta função será implementada para exportar relatórios
-        console.log('Export functionality placeholder - ready for integration');
-    }
-
-    // TODO: Notificações em tempo real
-    function initializeNotifications() {
-        // Esta função será implementada para notificações de novas transações
-        console.log('Notifications placeholder - ready for integration');
-    }
-
-    // TODO: Modo dark/light (opcional)
-    function initializeThemeToggle() {
-        // Esta função poderá ser implementada para alternar temas
-        console.log('Theme toggle placeholder - ready for integration');
-    }
-
-    // Inicializar funcionalidades básicas
-    initializeCharts();
-    initializeDataTable();
-    initializeSearch();
-    initializeFilters();
-    initializeExport();
-    initializeNotifications();
-
-    console.log('Admin Panel initialized successfully');
+    // Carregar os dados ao iniciar
+    loadData();
 });
-
-/* ========================================
-   UTILITÁRIOS PARA FUTURAS INTEGRAÇÕES
-   ======================================== */
-
-// Função para formatar valores monetários
-function formatCurrency(value) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(value);
-}
-
-// Função para formatar datas
-function formatDate(date) {
-    return new Intl.DateTimeFormat('pt-BR').format(new Date(date));
-}
-
-// Função para debounce (útil para busca)
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Função para detectar dispositivo móvel
-function isMobile() {
-    return window.innerWidth <= 768;
-}
-
-// Função para detectar tablet
-function isTablet() {
-    return window.innerWidth > 768 && window.innerWidth <= 1024;
-}
-
-// Função para mostrar loading
-function showLoading(element) {
-    if (element) {
-        element.innerHTML = '<div style="text-align: center; padding: 2rem; color: #646465;">Carregando...</div>';
-    }
-}
-
-// Função para esconder loading
-function hideLoading(element, originalContent) {
-    if (element) {
-        element.innerHTML = originalContent;
-    }
-}

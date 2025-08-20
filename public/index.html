@@ -10,35 +10,19 @@
 <body>
     <!-- Layout Principal -->
     <div class="admin-layout">
-        <!-- Menu Lateral Fixo -->
+        <!-- Menu Lateral -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>Financial Panel</h2>
                 <button class="close-btn" id="closeSidebar">×</button>
             </div>
-            
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="#" class="nav-item active">
-                        <span class="icon">📊</span>
-                        <span>Visão Geral</span>
-                    </a></li>
-                    <li><a href="#" class="nav-item">
-                        <span class="icon">📈</span>
-                        <span>Lucros</span>
-                    </a></li>
-                    <li><a href="#" class="nav-item">
-                        <span class="icon">📉</span>
-                        <span>Prejuízos</span>
-                    </a></li>
-                    <li><a href="#" class="nav-item">
-                        <span class="icon">📋</span>
-                        <span>Todos</span>
-                    </a></li>
-                    <li><a href="#" class="nav-item">
-                        <span class="icon">⚙️</span>
-                        <span>Configurações</span>
-                    </a></li>
+                    <li><a href="#" class="nav-item active"><span class="icon">📊</span><span>Visão Geral</span></a></li>
+                    <li><a href="#" class="nav-item"><span class="icon">📈</span><span>Lucros</span></a></li>
+                    <li><a href="#" class="nav-item"><span class="icon">📉</span><span>Prejuízos</span></a></li>
+                    <li><a href="#" class="nav-item"><span class="icon">📋</span><span>Todos</span></a></li>
+                    <li><a href="#" class="nav-item"><span class="icon">⚙️</span><span>Configurações</span></a></li>
                 </ul>
             </nav>
         </aside>
@@ -51,15 +35,11 @@
                     <button class="menu-toggle" id="menuToggle">☰</button>
                     <h1>Relatórios Financeiros</h1>
                 </div>
-                
                 <div class="header-right">
-                    <!-- Campo de Busca -->
                     <div class="search-container">
                         <input type="text" placeholder="Buscar..." class="search-input">
                         <span class="search-icon">🔍</span>
                     </div>
-                    
-                    <!-- Avatar de Usuário -->
                     <div class="user-profile">
                         <div class="avatar">👤</div>
                         <span class="user-name">Admin User</span>
@@ -67,15 +47,14 @@
                 </div>
             </header>
 
-            <!-- Área Principal -->
+            <!-- Dashboard -->
             <main class="dashboard-content">
-                <!-- Área do Gráfico -->
-                <!-- TODO: Esta seção será integrada com JavaScript para gráficos dinâmicos -->
+                <!-- Gráfico -->
                 <section class="chart-section">
                     <div class="chart-header">
                         <div>
                             <h3>Performance Financeira</h3>
-                            <p>Análise mensal de lucros e prejuízos</p>
+                            <p>Análise de lucros e prejuízos</p>
                         </div>
                         <div class="performance-indicator">
                             <span class="trend-up">📈</span>
@@ -83,49 +62,37 @@
                         </div>
                     </div>
                     
-                    <!-- Placeholder do Gráfico -->
-                    <div class="chart-placeholder">
-                        <div class="chart-content">
-                            <div class="chart-icon">📊</div>
-                            <h4>Gráfico de Performance</h4>
-                            <p>Esta área será preenchida com gráficos interativos mostrando dados de performance, lucros, prejuízos e tendências ao longo do tempo.</p>
-                            
-                            <div class="legend">
-                                <div class="legend-item">
-                                    <span class="legend-color green"></span>
-                                    <span>Lucros</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="legend-color red"></span>
-                                    <span>Prejuízos</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="legend-color blue"></span>
-                                    <span>Tendência</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
+                    <label for="filtro-status">Filtrar por status:</label>
+                    <select id="filtro-status">
+                      <option value="todos">Todos</option>
+                      <option value="concluido">Concluído</option>
+                      <option value="pendente">Pendente</option>
+                      <option value="em análise">Em análise</option>
+                    </select>
+
+
+                    <!-- Gráfico dinâmico -->
+                    <div id="chart"></div>
 
                     <!-- Stats Rápidas -->
                     <div class="quick-stats">
                         <div class="stat-card">
                             <h5>Lucro Total</h5>
-                            <p class="amount profit">R$ 234.500,00</p>
+                            <p id="lucroTotal" class="amount profit">Carregando...</p>
                         </div>
                         <div class="stat-card">
                             <h5>Prejuízo Total</h5>
-                            <p class="amount loss">R$ 45.200,00</p>
+                            <p id="prejuizoTotal" class="amount loss">Carregando...</p>
                         </div>
                         <div class="stat-card">
                             <h5>Saldo Líquido</h5>
-                            <p class="amount neutral">R$ 189.300,00</p>
+                            <p id="saldoLiquido" class="amount neutral">Carregando...</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- Tabela de Dados -->
-                <!-- TODO: Esta tabela será integrada com JavaScript para funcionalidades dinâmicas -->
+                <!-- Tabela -->
                 <section class="table-section">
                     <div class="table-header">
                         <h3>Últimas Transações</h3>
@@ -143,42 +110,8 @@
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="client-name">João Silva</td>
-                                    <td><span class="badge profit-badge">Lucro</span></td>
-                                    <td class="amount profit">R$ 15.000,00</td>
-                                    <td class="date">15/01/2024</td>
-                                    <td><span class="badge completed-badge">Concluído</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="client-name">Maria Santos</td>
-                                    <td><span class="badge loss-badge">Prejuízo</span></td>
-                                    <td class="amount loss">-R$ 2.500,00</td>
-                                    <td class="date">14/01/2024</td>
-                                    <td><span class="badge pending-badge">Pendente</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="client-name">Pedro Costa</td>
-                                    <td><span class="badge profit-badge">Lucro</span></td>
-                                    <td class="amount profit">R$ 8.750,00</td>
-                                    <td class="date">13/01/2024</td>
-                                    <td><span class="badge completed-badge">Concluído</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="client-name">Ana Oliveira</td>
-                                    <td><span class="badge profit-badge">Lucro</span></td>
-                                    <td class="amount profit">R$ 12.200,00</td>
-                                    <td class="date">12/01/2024</td>
-                                    <td><span class="badge completed-badge">Concluído</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="client-name">Carlos Lima</td>
-                                    <td><span class="badge loss-badge">Prejuízo</span></td>
-                                    <td class="amount loss">-R$ 1.800,00</td>
-                                    <td class="date">11/01/2024</td>
-                                    <td><span class="badge analysis-badge">Em análise</span></td>
-                                </tr>
+                            <tbody id="transactionsTable">
+                                <tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -187,9 +120,11 @@
         </div>
     </div>
 
-    <!-- Overlay para mobile -->
+    <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
 
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="script.js"></script>
 </body>
 </html>
