@@ -50,6 +50,22 @@ app.post('/api/clientes', async (req, res) => {
   }
 });
 
+// rota para buscar um cliente pelo nome
+app.get('/api/clientes/:nome', async (req, res) => {
+  try {
+    const { nome } = req.params;
+    const cliente = await Cliente.findOne({ nome: nome });
+
+    if (!cliente) {
+      return res.status(404).json({ error: 'Cliente não encontrado' });
+    }
+
+    res.json(cliente);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar cliente' });
+  }
+});
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);

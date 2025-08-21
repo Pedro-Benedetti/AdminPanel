@@ -1,11 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const transactionsTable = document.getElementById('transactionsTable');
-    const lucroTotalEl = document.getElementById('lucroTotal');
-    const prejuizoTotalEl = document.getElementById('prejuizoTotal');
-    const saldoLiquidoEl = document.getElementById('saldoLiquido');
-    const filtroStatusEl = document.getElementById('filtro-status');
+const transactionsTable = document.getElementById('transactionsTable');
+const lucroTotalEl = document.getElementById('lucroTotal');
+const prejuizoTotalEl = document.getElementById('prejuizoTotal');
+const saldoLiquidoEl = document.getElementById('saldoLiquido');
+const filtroStatusEl = document.getElementById('filtro-status');
+const filtroNomeEl = document.getElementById('filtro-nome');
 
     let chart; // variável global para o gráfico
+    let clientesCache = []; // cache dos dados do backend
 
     // ===== Buscar dados do backend =====
     async function loadData() {
@@ -18,10 +20,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            clientesCache = data;
+
+            preencherFiltroNomes(data);
             updateTable(data);
             updateStats(data);
-            initChart(data); // inicializa gráfico
-            applyFilter();   // aplica filtro na primeira vez
+            initChart();
+            applyFilter();
 
         } catch (err) {
             console.error("Erro ao carregar dados:", err);
@@ -29,28 +34,50 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // ===== Preencher select de nomes =====
+    function preencherFiltroNomes(data) {
+        filtroNomeEl.innerHTML = `<option value="todos">Todos</option>`;
+        data.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.nome;
+            option.textContent = c.nome;
+            filtroNomeEl.appendChild(option);
+        });
+    }
+
     // ===== Atualizar tabela =====
     function updateTable(data) {
-        if (data.length === 0) {
-            transactionsTable.innerHTML = `<tr><td colspan="5">Nenhuma transação encontrada</td></tr>`;
-            return;
-        }
+        const rows = [];
+        data.forEach(cliente => {
+            cliente.transacoes.forEach(t => {
+                rows.push(`
+                    <tr>
+                        <td class="client-name">${cliente.nome}</td>
+                        <td><span class="badge ${t.tipo === "lucro" ? "profit-badge" : "loss-badge"}">${t.tipo}</span></td>
+                        <td class="amount ${t.tipo === "lucro" ? "profit" : "loss"}">${formatCurrency(t.valor)}</td>
+                        <td class="date">${formatDate(t.data)}</td>
+                        <td><span class="badge ${statusBadge(cliente.status)}">${cliente.status}</span></td>
+                    </tr>
+                `);
+            });
+        });
 
-        transactionsTable.innerHTML = data.map(item => `
-            <tr>
-                <td class="client-name">${item.nome}</td>
-                <td><span class="badge ${item.tipo === "lucro" ? "profit-badge" : "loss-badge"}">${item.tipo}</span></td>
-                <td class="amount ${item.tipo === "lucro" ? "profit" : "loss"}">${formatCurrency(item.valor)}</td>
-                <td class="date">${formatDate(item.data)}</td>
-                <td><span class="badge ${statusBadge(item.status)}">${item.status}</span></td>
-            </tr>
-        `).join("");
+        transactionsTable.innerHTML = rows.length > 0 ? rows.join("") :
+            `<tr><td colspan="5">Nenhuma transação encontrada</td></tr>`;
     }
 
     // ===== Atualizar estatísticas =====
     function updateStats(data) {
-        const lucro = data.filter(i => i.tipo === "lucro").reduce((acc, i) => acc + i.valor, 0);
-        const prejuizo = data.filter(i => i.tipo === "prejuizo").reduce((acc, i) => acc + i.valor, 0);
+        let lucro = 0;
+        let prejuizo = 0;
+
+        data.forEach(cliente => {
+            cliente.transacoes.forEach(t => {
+                if (t.tipo === "lucro") lucro += t.valor;
+                if (t.tipo === "prejuizo") prejuizo += t.valor;
+            });
+        });
+
         const saldo = lucro - prejuizo;
 
         lucroTotalEl.textContent = formatCurrency(lucro);
@@ -58,74 +85,64 @@ document.addEventListener('DOMContentLoaded', function () {
         saldoLiquidoEl.textContent = formatCurrency(saldo);
     }
 
-    // ===== Inicializar gráfico =====
-    function initChart(data) {
+    // ===== Inicializar gráfico (linha 📈) =====
+    function initChart() {
         const options = {
             chart: {
-                type: 'bar',
+                type: 'line',
                 height: 350,
                 toolbar: { show: true }
             },
-            plotOptions: {
-                bar: {
-                    borderRadius: 8,
-                    horizontal: false,
-                    columnWidth: '55%',
-                },
-            },
-            dataLabels: {
-                enabled: true,
-                style: { colors: ['#fff'] }
-            },
-            xaxis: {
-                categories: [],
-                labels: {
-                    style: { fontSize: '14px', fontWeight: 600 }
-                }
-            },
-            yaxis: {
-                labels: {
-                    style: { fontSize: '14px' }
-                }
-            },
-            colors: ['#00E396', '#FF4560'],
-            legend: { position: 'top' },
+            stroke: { curve: 'smooth', width: 3 },
+            markers: { size: 6 },
+            dataLabels: { enabled: true },
+            xaxis: { categories: [] },
             tooltip: { theme: 'dark' },
-            series: [
-                { name: "Lucros", data: [] },
-                { name: "Prejuízos", data: [] }
-            ]
+            colors: ['#00E396'],
+            series: [{ name: "Histórico", data: [] }]
         };
 
         chart = new ApexCharts(document.querySelector("#chart"), options);
         chart.render();
-
-        // guarda os dados iniciais em cache para filtrar depois
-        chart.originalData = data;
     }
 
-    // ===== Aplicar filtro no gráfico =====
+    // ===== Aplicar filtros no gráfico =====
     function applyFilter() {
-        const filtro = filtroStatusEl.value;
-        const data = chart.originalData;
+        const filtroStatus = filtroStatusEl.value;
+        const filtroNome = filtroNomeEl.value;
 
-        const filtrados = filtro === 'todos'
-            ? data
-            : data.filter(c => c.status === filtro);
+        let filtrados = clientesCache;
 
-        const categorias = filtrados.map(c => c.nome);
-        const lucros = filtrados.map(c => c.tipo === "lucro" ? c.valor : 0);
-        const prejuizos = filtrados.map(c => c.tipo === "prejuizo" ? c.valor : 0);
+        // Filtro por status
+        if (filtroStatus !== 'todos') {
+            filtrados = filtrados.filter(c => c.status === filtroStatus);
+        }
 
-        chart.updateOptions({ xaxis: { categories: categorias } });
-        chart.updateSeries([
-            { name: "Lucros", data: lucros },
-            { name: "Prejuízos", data: prejuizos }
-        ]);
+        let categorias = [];
+        let valores = [];
+
+        if (filtroNome !== 'todos') {
+            // Histórico de um cliente
+            const cliente = filtrados.find(c => c.nome === filtroNome);
+            if (cliente) {
+                categorias = cliente.transacoes.map(t => formatDate(t.data));
+                valores = cliente.transacoes.map(t => t.tipo === "lucro" ? t.valor : -t.valor);
+            }
+        } else {
+            // Soma por cliente
+            categorias = filtrados.map(c => c.nome);
+            valores = filtrados.map(c =>
+                c.transacoes.reduce((acc, t) => acc + (t.tipo === "lucro" ? t.valor : -t.valor), 0)
+            );
+        }
+
+        chart.updateOptions({ xaxis: { categories } });
+        chart.updateSeries([{ name: "Histórico", data: valores }]);
     }
 
-    // evento para atualizar quando mudar filtro
+    // eventos
     filtroStatusEl.addEventListener('change', applyFilter);
+    filtroNomeEl.addEventListener('change', applyFilter);
 
     // ===== Helpers =====
     function formatCurrency(value) {

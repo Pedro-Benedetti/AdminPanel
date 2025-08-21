@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
     <!-- Layout Principal -->
     <div class="admin-layout">
+
         <!-- Menu Lateral -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -29,6 +31,7 @@
 
         <!-- Conteúdo Principal -->
         <div class="main-content">
+
             <!-- Barra Superior -->
             <header class="top-header">
                 <div class="header-left">
@@ -49,6 +52,38 @@
 
             <!-- Dashboard -->
             <main class="dashboard-content">
+
+                <!-- Filtros -->
+                <label for="filtro-status">Filtrar por status:</label>
+                <select id="filtro-status">
+                   <option value="todos">Todos</option>
+                   <option value="concluido">Concluído</option>
+                   <option value="pendente">Pendente</option>
+                   <option value="em análise">Em análise</option>
+                </select>
+     
+                <label for="filtro-nome">Filtrar por cliente:</label>
+                <select id="filtro-nome">
+                   <option value="todos">Todos</option>
+                </select>
+
+                <div class="filtros">
+                  <label for="clienteSelect">Escolha o cliente:</label>
+                  <select id="clienteSelect">
+                    <option value="">-- Selecione --</option>
+                    <option value="Maria Oliveira">Maria Oliveira</option>
+                    <option value="João Silva">João Silva</option>
+                    <option value="Ana Costa">Ana Costa</option>
+                    <option value="Carlos Mendes">Carlos Mendes</option>
+                    <option value="Fernanda Souza">Fernanda Souza</option>
+                    <option value="Ricardo Almeida">Ricardo Almeida</option>
+                    <option value="Juliana Santos">Juliana Santos</option>
+                    <option value="Paulo Henrique">Paulo Henrique</option>
+                  </select>
+                </div>
+                <div id="chart"></div>
+
+
                 <!-- Gráfico -->
                 <section class="chart-section">
                     <div class="chart-header">
