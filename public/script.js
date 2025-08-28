@@ -5,6 +5,39 @@ const prejuizoTotalEl = document.getElementById('prejuizoTotal');
 const saldoLiquidoEl = document.getElementById('saldoLiquido');
 const filtroStatusEl = document.getElementById('filtro-status');
 const filtroNomeEl = document.getElementById('filtro-nome');
+const clienteSelect = document.getElementById('clienteSelect');
+
+// Função que busca o cliente e renderiza o gráfico
+async function carregarCliente(nome) {
+  if (!nome) return;
+
+  try {
+    const res = await fetch(`/api/clientes/${encodeURIComponent(nome)}`);
+    const cliente = await res.json();
+
+    console.log("Cliente recebido do backend:", cliente);
+
+    if (!cliente.historico || cliente.historico.length === 0) {
+      alert('Este cliente não possui histórico.');
+      return;
+    }
+
+    // Preparar dados para o gráfico
+    const valores = cliente.historico.map(h => h.valor);
+    const datas = cliente.historico.map(h => new Date(h.data).toLocaleDateString());
+
+    console.log("Datas:", datas);
+    console.log("Valores:", valores);
+
+    // Atualizar gráfico ApexCharts
+    chart.updateOptions({
+      xaxis: { categories: datas },
+      series: [{ name: 'Histórico', data: valores }]
+    });
+  } catch (error) {
+    console.error("Erro ao carregar cliente:", error);
+  }
+}
 
     let chart; // variável global para o gráfico
     let clientesCache = []; // cache dos dados do backend
@@ -136,8 +169,13 @@ const filtroNomeEl = document.getElementById('filtro-nome');
             );
         }
 
-        chart.updateOptions({ xaxis: { categories } });
-        chart.updateSeries([{ name: "Histórico", data: valores }]);
+           chart.updateOptions({
+           xaxis: { categories: datas } 
+        });
+           chart.updateSeries([
+          { name: "Histórico", data: valores }
+        ]);
+
     }
 
     // eventos

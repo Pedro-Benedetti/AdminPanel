@@ -66,6 +66,22 @@ app.get('/api/clientes/:nome', async (req, res) => {
   }
 });
 
+// 🔹 Rota para buscar um cliente específico pelo nome
+app.get('/api/clientes/:nome', async (req, res) => {
+  try {
+    const { nome } = req.params;
+    const cliente = await Cliente.findOne({ nome: nome });
+
+    if (!cliente) {
+      return res.status(404).json({ mensagem: 'Cliente não encontrado' });
+    }
+
+    res.json(cliente);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar cliente', detalhe: error.message });
+  }
+});
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
